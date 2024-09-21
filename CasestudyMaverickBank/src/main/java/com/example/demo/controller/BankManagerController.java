@@ -21,6 +21,7 @@ import com.example.demo.domain.EligibilityResponse;
 import com.example.demo.domain.LoanDetailsResponse;
 import com.example.demo.domain.NewLoan;
 import com.example.demo.service.AccountService;
+import com.example.demo.service.ApprovalRequestService;
 import com.example.demo.service.NewLoanService;
 import com.example.demo.service.UserService;
 
@@ -36,34 +37,34 @@ public class BankManagerController {
     private NewLoanService newlservice;
     
     @Autowired
-	private UserService userservice;
+    private ApprovalRequestService appRequestService;
 	
     //shows every request made to BankManager regarding
     //->Bank account and Loan 
     @GetMapping(value = "/showRequests")
 	public List<ApprovalRequest> showUnapproved() {
-	    return userservice.BankMrequests();
+	    return appRequestService.BankMrequests();
 	}
     
     //Approval,Rejection and Closing of BankAccounts
     @PutMapping("/approve-bank-account/{requestId}")
     public String approveAccount(@PathVariable int  requestId) {
-    	return accountService.approveBankAccounts(requestId);
+    	return appRequestService.approveBankAccounts(requestId);
     }
     
     @PutMapping("/reject-bank-account/{requestId}")
     public String rejectAccount(@PathVariable int  requestId) {
-    	return accountService.rejectBankAccount(requestId);
+    	return appRequestService.rejectBankAccount(requestId);
     }
     
     @PutMapping("/close-bank-account/{requestId}")
     public String closeuserAccount(@PathVariable int requestId) {
-    	return accountService.CloseBankAccounts(requestId);
+    	return appRequestService.CloseBankAccounts(requestId);
     }
     
     @PutMapping("/reject-close-bank-account/{requestId}")
     public String rejectClosing(@PathVariable int requestId) {
-    	return accountService.RejectCloseBankAccounts(requestId);
+    	return appRequestService.RejectCloseBankAccounts(requestId);
     }
     
     //Checks loan eligibility and decides to approve or reject loans
@@ -76,12 +77,12 @@ public class BankManagerController {
 	 @PutMapping("/approve-loan")
 	 public String approveloan(@RequestParam int loanId, @RequestParam double sanctionAmount, 
 			 @RequestParam int period) {
-		 return newlservice.approveLoan(loanId, sanctionAmount, period);
+		 return appRequestService.approveLoan(loanId, sanctionAmount, period);
 	 }
 	 
 	 @PutMapping("/reject-loan/{requestId}")
 	 public String approveloan(@PathVariable int requestId) {
-		 return newlservice.RejectLoan(requestId);
+		 return appRequestService.RejectLoan(requestId);
 	 }
 	 
 	 //Checks condition for early loan closing
@@ -93,12 +94,12 @@ public class BankManagerController {
 	 
 	 @PutMapping("/approve-loan-closing/{requestId}")
 	 public String approveloanclose(@PathVariable int requestId) {
-		 return newlservice.approveLoanClose(requestId);
+		 return appRequestService.approveLoanClose(requestId);
 	 }
 	 
 	 @PutMapping("/reject-loan-closing/{requestId}")
 	 public String rejectloanclose(@PathVariable int requestId) {
-		 return newlservice.RejectLoanClose(requestId);
+		 return appRequestService.RejectLoanClose(requestId);
 	 }
 
 	 //Account statements and Financial report of the customer
@@ -143,7 +144,4 @@ public class BankManagerController {
     public String deleteAccount(@PathVariable int loanId) {
     	return newlservice.deleteLoan(loanId);
     }
-    
-    
-   
 }

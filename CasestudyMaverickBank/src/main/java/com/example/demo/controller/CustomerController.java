@@ -24,6 +24,7 @@ import com.example.demo.domain.NewLoanList;
 import com.example.demo.domain.User;
 import com.example.demo.repository.NewLoanListRepository;
 import com.example.demo.service.AccountService;
+import com.example.demo.service.ApprovalRequestService;
 import com.example.demo.service.BankService;
 import com.example.demo.service.BeneficiariesService;
 import com.example.demo.service.InstallmentsService;
@@ -59,6 +60,9 @@ public class CustomerController {
     
     @Autowired
     private InstallmentsService installmentservice;
+    
+    @Autowired
+    private ApprovalRequestService appRequestService;
     
 	//adding user, adding account and adding beneficiary
 	@PostMapping(value = "/addUser")
@@ -170,17 +174,17 @@ public class CustomerController {
     //closing request for user account,bank account and loan
 	@PostMapping("/close-useraccount-request/{username}")
 	public String closerequest(@PathVariable String username) {
-		return service.closeUserAccountsRequest(username);
+		return appRequestService.closeUserAccountsRequest(username);
 	}
 		 
 	@PostMapping("/close-bankaccount-request/{accountNumber}")
 	public String closebrequest(@PathVariable String accountNumber) {
-		return accountService.closeBankAccountsRequest(accountNumber);
+		return appRequestService.closeBankAccountsRequest(accountNumber);
 	}
 	    
 	@PostMapping("/close-loan-request/{loanid}")
     public String closeRequest (@PathVariable int loanid) {
-		return newLoanService.LoanClose(loanid);
+		return appRequestService.LoanClose(loanid);
 	}
 	
 	//standard methods
@@ -199,7 +203,6 @@ public class CustomerController {
 		return lservice.loginuser(username, password);
 	 }
 	
-	    
 }
     
  

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.domain.ApprovalRequest;
 import com.example.demo.domain.User;
 import com.example.demo.domain.Usershow;
+import com.example.demo.service.ApprovalRequestService;
 import com.example.demo.service.LoginService;
 import com.example.demo.service.UserService;
 
@@ -33,26 +34,29 @@ public class AdminController {
 		@Autowired
 		private LoginService lservice;
 		
+	    @Autowired
+	    private ApprovalRequestService appRequestService;
+		
 		//shows every request made to Admin regarding user account 
 		@GetMapping(value = "/showRequests")
 		public List<ApprovalRequest> showUnapproved() {
-		    return service.requests();
+		    return appRequestService.requests();
 		}
 		
 		//Approval, Rejection and Closing of user account
 	    @PutMapping("/approve-user-account/{requestId}")
 	    public String approveAccount(@PathVariable int requestId) {
-	    	return userservice.approveUserAccounts(requestId);
+	    	return appRequestService.approveUserAccounts(requestId);
 	    }
 	    
 	    @PutMapping("/reject-user-account/{requestId}")
 	    public String RejectAccount(@PathVariable int requestId) {
-	    	return userservice.RejectUserAccount(requestId);
+	    	return appRequestService.RejectUserAccount(requestId);
 	    }
 	    
 	    @PutMapping("/close-user-account/{requestId}")
 	    public String closeuserAccount(@PathVariable int requestId) {
-	    	return userservice.CloseUserAccounts(requestId);
+	    	return appRequestService.CloseUserAccounts(requestId);
 	    }
 	  
 		//standardmethods
