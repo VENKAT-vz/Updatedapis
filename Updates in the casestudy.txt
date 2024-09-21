@@ -1,0 +1,50 @@
+Updates in the casestudy:
+
+Changed the usercontroller to customercontroller
+	    Managercontroller to BankManagerController
+
+Added a table approval_request:
+	Whenever a request is made it will be stored in this table like,
+	-> user account approval and closure
+	-> bank account and loan - approval and closure
+
+	Only for the closure the user have to apply, for approval while creating 
+	the user or bank account, it will automatically inserted to approval_request.
+
+	The bank manager or admin respectively see their request from this table
+	and will approve or reject.
+
+
+----
+
+The loan part is implemented as we discussed,
+__________________________________________________
+	->First the loan list will be shown to the customer,
+	->Then for applying the customer will enter his/her accountnumber, loanname, loanamount and income(will be added to the users table).
+
+	-> Loan approval request will be added in the ApprovalRequest table.
+
+		Loan approval is based on two things, 
+			->income and 
+			->totaldeposit should be greater than totalwithdraw  
+			For that a new method is added,
+				->ShowEligibility - to show the conditions as a result, created a POJO class EligibilityResponse.
+
+	-> After the approval, the first installment will be created.
+	-> The customer will be notified one day before the installment due date via mail.
+		For this a new class Email service and service class is created.
+
+	-> Then for paying the installments the customer will enter loanid, paymentdate, paymentType, paymentAmount and remarks.
+	-> After the payment is done, the next installment for this loan will be added in the installments table.
+	-> The total balance in loan table will be reduced by the installments amount.
+
+	-> If the loan tenure is in the last month then the customer has to request for the BankManager to loan close.
+	-> The loan will get closed only when total balance is 0 and status of the loan is "CanClose" which will be set the BankManager if approves the loan closure.
+	-> The same way a customer can apply for Early closing of loan 
+
+		But it is based on two things, 
+			->mininumtenure of that particular loan(a column added in loan list) , 
+			->repayment points
+		To show these conditions and verdict to the BankManager, created a POJO class LoanDetailsResponse
+
+	->Based on that LoanDetailsResponse, the BankManager will approve or reject the loan closure.
