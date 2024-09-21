@@ -202,15 +202,14 @@ public class NewLoanService {
 
   
   public LoanDetailsResponse getLoanDetForApproval(int loanId) {
-	    // Fetch loan details from the new_loan table
-	    Optional<NewLoan> optionalLoan = newLoanrepo.findById(loanId);
+
+	  Optional<NewLoan> optionalLoan = newLoanrepo.findById(loanId);
 	    if (!optionalLoan.isPresent()) {
 	        throw new RuntimeException("Loan with ID " + loanId + " not found.");
 	    }
 
 	    NewLoan loan = optionalLoan.get();
 
-	    // Fetch the loan type details from loan_list table based on loan_name
 	    Optional<NewLoanList> optionalLoanList = newLoanListRepository.findUsingLoanName(loan.getLoanName());
 	    if (!optionalLoanList.isPresent()) {
 	        throw new RuntimeException("Loan type " + loan.getLoanName() + " not found.");
@@ -218,20 +217,15 @@ public class NewLoanService {
 
 	    NewLoanList loanList = optionalLoanList.get();
 
-	    // Calculate the outstanding balance (remaining balance)
 	    double outstandingBalance = loan.getTotalAmount();
 
-	    // Calculate how many months have passed since the loan was approved
 	    LocalDate loanApprovedDate = loan.getLoanApprovedDate().toLocalDate();
 	    LocalDate today = LocalDate.now();
 
-	    // Use Period to calculate the difference
 	    Period period = Period.between(loanApprovedDate, today);
 
-	    // Calculate total months by combining years and months
 	    int monthsPassed = period.getYears() * 12 + period.getMonths();
 
-	    // Prepare the loan details DTO
 	    LoanDetailsResponse loanDetails = new LoanDetailsResponse();
 	    loanDetails.setLoanId(loan.getLoanId());
 	    loanDetails.setLoanName(loan.getLoanName());
@@ -239,7 +233,6 @@ public class NewLoanService {
 	    loanDetails.setMinTenureMonths(loanList.getMinTenure());
 	    loanDetails.setOutstandingBalance(outstandingBalance);
 
-	    // Check conditions and set the verdict
 	    if (monthsPassed >= loanList.getMinTenure() && loan.getRepaymentPoints() > 15) {
 	    	loanDetails.setVerdict("Loan is ready to close.");
 	    } else if (monthsPassed < loanList.getMinTenure()) {
