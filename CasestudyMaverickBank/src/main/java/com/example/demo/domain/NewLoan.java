@@ -46,7 +46,10 @@ public class NewLoan {
 
     @Column(name = "account_number", nullable = false)
     private String accountNumber;
-
+    
+    @Column(name="repayment_points", nullable=true)
+    private int repaymentPoints;
+    
     @ManyToOne
     @JoinColumn(name = "account_number", referencedColumnName = "account_number", insertable = false, updatable = false)
     private Account account;
@@ -137,6 +140,14 @@ public class NewLoan {
 
 	public void setAccount(Account account) {
 		this.account = account;
+	}
+
+	public int getRepaymentPoints() {
+		return repaymentPoints;
+	}
+
+	public void setRepaymentPoints(int repaymentPoints) {
+		this.repaymentPoints = repaymentPoints;
 	}
 
 }

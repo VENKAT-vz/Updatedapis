@@ -5,9 +5,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.Account;
+import com.example.demo.domain.ApprovalRequest;
+import com.example.demo.domain.Login;
 import com.example.demo.domain.Transaction;
 import com.example.demo.domain.User;
 import com.example.demo.repository.AccountRepository;
+import com.example.demo.repository.ApprovalRequestRepository;
 import com.example.demo.repository.TransactionRepository;
 import com.example.demo.repository.UserRepository;
 
@@ -23,13 +26,15 @@ public class AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
-    
 
     @Autowired
     private UserRepository userRepository;
     
     @Autowired
     private TransactionRepository transRepository;
+    
+    @Autowired
+    private ApprovalRequestRepository approvalRequestRepository;
     
 
     public Account addAccount(Account account, String aadhaarNumber, String panNumber,Double income) throws ClassNotFoundException, SQLException {
@@ -65,6 +70,15 @@ public class AccountService {
         if (age < 18) {
             throw new IllegalArgumentException("User is not eligible to open an account (under 18 years old).");
         }
+        
+        ApprovalRequest approvalRequest = new ApprovalRequest();
+        approvalRequest.setToWhom("BankManager");
+        approvalRequest.setRequirement("AccountApproval"); 
+        approvalRequest.setActionNeededOn(savedAccount.getAccountNumber());
+        approvalRequest.setStatus("Pending"); 
+        approvalRequest.setCreatedAt(currentDate);
+        approvalRequestRepository.save(approvalRequest);
+        
     	return savedAccount;
     }
 
@@ -188,6 +202,58 @@ public class AccountService {
 	    }
 	    return age;
 	}
+	
+	//admin
+	 public String CloseBankAccounts(int requestId) {
+		 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+		 
+		 
+		 String accno=approvalRequest.getActionNeededOn();
+		 Optional<Account> optionalaccount=accountRepository.findByAccountNumber(accno);
+		 Account account= optionalaccount.get();
+		 account.setStatus("closed");
+		 accountRepository.save(account);
+		 
+		 approvalRequest.setStatus("Approved");
+
+		 approvalRequestRepository.save(approvalRequest);
+		 
+		 return "The Bank account is closed...";
+		 
+	      
+	 }
+   //customer
+	 public String closeBankAccountsRequest(String accountNumber) {
+		 ApprovalRequest approvalRequest = new ApprovalRequest();
+		    approvalRequest.setToWhom("BankManager");
+		    approvalRequest.setRequirement("Bank Account Closure "); 
+		    approvalRequest.setActionNeededOn(accountNumber); 
+		    approvalRequest.setStatus("Pending"); 
+		    approvalRequest.setCreatedAt(new Date(System.currentTimeMillis()));
+		    approvalRequestRepository.save(approvalRequest); 
+		    
+		    return"Closing of Bank account requested to Bank Manager..";
+}
+	 //bankmanager
+	 public String approveBankAccounts(int requestId) {
+		 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+		
+		 
+		 String username=approvalRequest.getActionNeededOn();
+		 Optional<Account> optionalaccount=accountRepository.findByAccountNumber(username);
+		 Account account=optionalaccount.get();
+		 account.setStatus("active");
+		 accountRepository.save(account);
+		 
+		 approvalRequest.setStatus("Approved");
+		 approvalRequestRepository.save(approvalRequest);
+		 
+		 return "The bank account is set to active...";
+		 
+	      
+}
 
 
 }

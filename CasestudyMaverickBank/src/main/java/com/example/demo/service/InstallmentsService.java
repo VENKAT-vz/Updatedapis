@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -59,14 +60,20 @@ public class InstallmentsService {
 
 	      installmentrepo.save(installment);
 
-	      updateTotalBalance(loanId, paymentAmount);
+	      addRepaymentPoints(loanId, PaymentDate, installment.getInstallmentDate());
+
+	      int res = updateTotalBalance(loanId, paymentAmount);
+	      if(res==0) {
+	    	  return "Total amount for the loan is paid for this loan id..."+loanId;
+	      }
+	      else {
+	    	  createNextInstallment(loanId);
 	      
-	      createNextInstallment(loanId);
-	      
-	      return "Installment payment successful for loan ID: " + loanId;
+	    	  return "Installment payment successful for loan ID: " + loanId;
+	      }
 	  }
 	  
-	  private void updateTotalBalance(int loanId, double paymentAmount) {
+	  private int updateTotalBalance(int loanId, double paymentAmount) {
 	      Optional<NewLoan> optionalLoan = newLoanrepo.findById(loanId);
 	      if (!optionalLoan.isPresent()) {
 	          throw new RuntimeException("Loan not found with ID: " + loanId);
@@ -77,10 +84,13 @@ public class InstallmentsService {
 	      
 	      loan.setTotalAmount(newTotalBalance);
 
-	      if (newTotalBalance <= 0) {
+	      if (loan.getStatus().equals("CanClose") && newTotalBalance <= 0) {
 	          loan.setStatus("Closed");
+	 	     newLoanrepo.save(loan);
+	 	     return 0;
 	      }
 	     newLoanrepo.save(loan);
+ 	     return 1;
 	  }
 	  
 	
@@ -105,6 +115,36 @@ public class InstallmentsService {
 
 	        installmentrepo.save(newInstallment);
 	    }
+	 
+	 public void addRepaymentPoints(int loanId, Date paymentDate, Date installmentDate) {
+
+		 	LocalDate paymentLocalDate = paymentDate.toLocalDate();
+		    LocalDate installmentLocalDate = installmentDate.toLocalDate();
+
+		    NewLoan loan = newLoanrepo.findById(loanId).orElseThrow(() -> new RuntimeException("Loan not found"));
+
+		    Period period = Period.between(installmentLocalDate, paymentLocalDate);
+		    int daysDifference = period.getDays();
+		    
+		    int pointsToAdd = 0;
+		    
+		    if (daysDifference < 0) {
+		        pointsToAdd = 2;  
+		    }
+		    else if (daysDifference == 0) {
+		        pointsToAdd = 0;  
+		    }
+		    else if (daysDifference > 0 && daysDifference < 30) {
+		        pointsToAdd = -2;  
+		    }
+		    else if (daysDifference >= 30) {
+		        pointsToAdd = -5;  
+		    }
+
+		    loan.setRepaymentPoints(loan.getRepaymentPoints() + pointsToAdd);
+		    newLoanrepo.save(loan);
+		}
+
 }
 
 

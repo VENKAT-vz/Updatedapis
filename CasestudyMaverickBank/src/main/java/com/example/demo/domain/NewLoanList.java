@@ -30,6 +30,9 @@ public class NewLoanList {
     
     @Column(name = "eligible_income", nullable = false)
     private Double eligibleIncome;
+    
+    @Column(name = "min_tenure_months", nullable = false)
+    private int minTenure;
 
     
 	public NewLoanList(Long loanTypeId, String loanName, Double amount, Double interestRate, Integer period,double eligibleIncome) {
@@ -97,6 +100,18 @@ public class NewLoanList {
 
 	public void setEligibleIncome(Double eligibleIncome) {
 		this.eligibleIncome = eligibleIncome;
+	}
+
+
+
+	public int getMinTenure() {
+		return minTenure;
+	}
+
+
+
+	public void setMinTenure(int minTenure) {
+		this.minTenure = minTenure;
 	}
 
 

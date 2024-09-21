@@ -1,7 +1,9 @@
 package com.example.demo.service;
 
 
-import java.util.Date;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,11 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.Account;
+import com.example.demo.domain.ApprovalRequest;
 import com.example.demo.domain.EligibilityResponse;
+import com.example.demo.domain.LoanDetailsResponse;
+import com.example.demo.domain.Login;
 import com.example.demo.domain.NewLoan;
+import com.example.demo.domain.NewLoanList;
 import com.example.demo.domain.Transaction;
 import com.example.demo.domain.User;
 import com.example.demo.repository.AccountRepository;
+import com.example.demo.repository.ApprovalRequestRepository;
 import com.example.demo.repository.NewLoanListRepository;
 import com.example.demo.repository.NewLoanRepository;
 import com.example.demo.repository.TransactionRepository;
@@ -44,14 +51,26 @@ public class NewLoanService {
 	@Autowired
 	private UserRepository userRepository;
 	
-	
+	 @Autowired
+	private NewLoanListRepository newLoanListRepository;
+	 
+	 @Autowired
+		private ApprovalRequestRepository approvalRequestRepository;
 	
 	@Transactional
 	public NewLoan applyloan(NewLoan loan,double income) {
 		
 		newLoanrepo.updateUserIncomeByAccountNumber(income,loan.getAccountNumber());
 		newLoanrepo.save(loan);
-
+		
+		ApprovalRequest approvalRequest = new ApprovalRequest();
+	    approvalRequest.setToWhom("BankManager");
+	    approvalRequest.setRequirement("LoanApproval"); 
+	    approvalRequest.setActionNeededOn( Integer.toString(loan.getLoanId())); 
+	    approvalRequest.setStatus("Pending"); 
+	    approvalRequest.setCreatedAt(new Date(System.currentTimeMillis()));
+	    approvalRequestRepository.save(approvalRequest);
+	    
 		return loan;
 	}
 	
@@ -75,7 +94,7 @@ public class NewLoanService {
 	        Transaction transaction = new Transaction();
 	        transaction.setAccountNumber(loan.getAccountNumber());
 	        transaction.setAmount(sanctionAmount);
-	        transaction.setTransactionDate(new java.sql.Date(new Date().getTime()));
+	        transaction.setTransactionDate(new Date(System.currentTimeMillis()));
 	        transaction.setTransactionType("Loan rebursement");
 	        transaction.setDescription("Loan Amount deposited into account");
 
@@ -145,17 +164,125 @@ public class NewLoanService {
       return response;
   }
   
-  public String RejectLoan(int loanId) {
-	  Optional<NewLoan> optionalloan = newLoanrepo.findById(loanId);
+  public String RejectLoan(int requestId) {
+	  
+	  Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+		 
+		 String loanid=approvalRequest.getActionNeededOn();
+	  Optional<NewLoan> optionalloan = newLoanrepo.findById(Integer.valueOf(loanid));
 	  if (!optionalloan.isPresent()) {
-          throw new IllegalArgumentException("Loan not found with loanid: " + loanId);
+          throw new IllegalArgumentException("Loan not found with loanid: " + loanid);
       }
 	  
 	  NewLoan loan = optionalloan.get();
 	  loan.setStatus("Rejected");
 	  newLoanrepo.save(loan);
+	  
+		 approvalRequest.setStatus("Rejected");
+		 approvalRequest.setRemarks("We need accurate details for cross verifying your details. "
+		 		+ "For now it is not enough. Try again with accurate details");
+		 approvalRequestRepository.save(approvalRequest);
 	  return "Loan rejected";
   }
+  
+  public String LoanClose(int loanId) {
+	  
+	    ApprovalRequest approvalRequest = new ApprovalRequest();
+	    approvalRequest.setToWhom("BankManager");
+	    approvalRequest.setRequirement("LoanClosure"); 
+	    approvalRequest.setActionNeededOn( Integer.toString(loanId)); 
+	    approvalRequest.setStatus("Pending"); 
+	    approvalRequest.setCreatedAt(new Date(System.currentTimeMillis()));
+	    approvalRequestRepository.save(approvalRequest);
+	    
+	    return "Loan Closure is requested to the BankManager...";
+  }
+  
+
+  
+  public LoanDetailsResponse getLoanDetForApproval(int loanId) {
+	    // Fetch loan details from the new_loan table
+	    Optional<NewLoan> optionalLoan = newLoanrepo.findById(loanId);
+	    if (!optionalLoan.isPresent()) {
+	        throw new RuntimeException("Loan with ID " + loanId + " not found.");
+	    }
+
+	    NewLoan loan = optionalLoan.get();
+
+	    // Fetch the loan type details from loan_list table based on loan_name
+	    Optional<NewLoanList> optionalLoanList = newLoanListRepository.findUsingLoanName(loan.getLoanName());
+	    if (!optionalLoanList.isPresent()) {
+	        throw new RuntimeException("Loan type " + loan.getLoanName() + " not found.");
+	    }
+
+	    NewLoanList loanList = optionalLoanList.get();
+
+	    // Calculate the outstanding balance (remaining balance)
+	    double outstandingBalance = loan.getTotalAmount();
+
+	    // Calculate how many months have passed since the loan was approved
+	    LocalDate loanApprovedDate = loan.getLoanApprovedDate().toLocalDate();
+	    LocalDate today = LocalDate.now();
+
+	    // Use Period to calculate the difference
+	    Period period = Period.between(loanApprovedDate, today);
+
+	    // Calculate total months by combining years and months
+	    int monthsPassed = period.getYears() * 12 + period.getMonths();
+
+	    // Prepare the loan details DTO
+	    LoanDetailsResponse loanDetails = new LoanDetailsResponse();
+	    loanDetails.setLoanId(loan.getLoanId());
+	    loanDetails.setLoanName(loan.getLoanName());
+	    loanDetails.setRepaymentPoints(loan.getRepaymentPoints());
+	    loanDetails.setMinTenureMonths(loanList.getMinTenure());
+	    loanDetails.setOutstandingBalance(outstandingBalance);
+
+	    // Check conditions and set the verdict
+	    if (monthsPassed >= loanList.getMinTenure() && loan.getRepaymentPoints() > 15) {
+	    	loanDetails.setVerdict("Loan is ready to close.");
+	    } else if (monthsPassed < loanList.getMinTenure()) {
+	    	loanDetails.setVerdict("Loan cannot be closed. Minimum tenure of " + loanList.getMinTenure() + " months not met.");
+	    } else if (loan.getRepaymentPoints() <= 15) {
+	    	loanDetails.setVerdict("Loan cannot be closed. Repayment points must be greater than 15.");
+	    }
+
+	    return loanDetails;
+	}
+  
+  public String RejectLoanClose(int requestId) {
+			 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+			 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+			 approvalRequest.setStatus("Rejected");
+			 approvalRequest.setRemarks("The reason for rejection is your repayments points "
+			 		+ "and minimum tenure of early repayments have not met the condition..");
+			 approvalRequestRepository.save(approvalRequest);
+			 
+			 return "The loan account is rejected...";
+			 
+  }
+  
+	 public String approveLoanClose(int requestId) {
+		 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+		 
+		 String loanid=approvalRequest.getActionNeededOn();
+		 Optional<NewLoan> optionalloan=newLoanrepo.findById(Integer.valueOf(loanid));
+		 
+		 NewLoan loan=optionalloan.get();
+		 loan.setStatus("CanClose");
+		 newLoanrepo.save(loan);
+		 
+		 approvalRequest.setStatus("Approved");
+		 approvalRequest.setRemarks("You can now pay the entire loan early and close the loan. The loan closing is approved");
+		 approvalRequestRepository.save(approvalRequest);
+		 
+		 return "The loan closing is approved successfully....";
+		 
+	      
+}
+
 }
   
 

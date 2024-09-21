@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.domain.ApprovalRequest;
 import com.example.demo.domain.User;
 import com.example.demo.service.LoginService;
 import com.example.demo.service.UserService;
@@ -31,19 +32,19 @@ public class AdminController {
 		@Autowired
 		private LoginService lservice;
 		
-		@GetMapping(value = "/showUnapproved")
-		public List<User> showUnapproved() {
-		    return service.unapprovedUserAccounts();
+		@GetMapping(value = "/showRequests")
+		public List<ApprovalRequest> showUnapproved() {
+		    return service.requests();
 		}
 		
-	    @PutMapping("/approve-user-account/{username}")
-	    public String approveAccount(@PathVariable String username) {
-	    	return userservice.approveUserAccounts(username);
+	    @PutMapping("/approve-user-account/{requestId}")
+	    public String approveAccount(@PathVariable int requestId) {
+	    	return userservice.approveUserAccounts(requestId);
 	    }
 	    
-	    @PutMapping("/close-user-account/{username}")
-	    public String closeuserAccount(@PathVariable String username) {
-	    	return userservice.closeUserAccounts(username);
+	    @PutMapping("/close-user-account/{requestId}")
+	    public String closeuserAccount(@PathVariable int requestId) {
+	    	return userservice.CloseUserAccounts(requestId);
 	    }
 	    
 		@GetMapping(value = "/showAll")

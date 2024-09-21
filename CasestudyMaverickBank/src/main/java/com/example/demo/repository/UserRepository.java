@@ -23,15 +23,15 @@ public interface UserRepository extends JpaRepository<User, String>{
     // here aadhar and pan will also print, to avoid that maybe 
     //we can use a new dto class without pan and aadhar
     
-    @Transactional
-    @Modifying
-    @Query("UPDATE User u SET u.status = 'active' WHERE u.username = :username")
-    int approveUserAccount(@Param("username") String username);
-    
-    @Transactional
-    @Modifying
-    @Query("UPDATE User u SET u.status = 'closed' WHERE u.username = :username")
-    int closeUserAccount(@Param("username") String username);
+//    @Transactional
+//    @Modifying
+//    @Query("UPDATE User u SET u.status = 'active' WHERE u.username = :username")
+//    int approveUserAccount(@Param("username") String username);
+//    
+//    @Transactional
+//    @Modifying
+//    @Query("UPDATE User u SET u.status = 'closed' WHERE u.username = :username")
+//    int closeUserAccount(@Param("username") String username);
 }
 
 

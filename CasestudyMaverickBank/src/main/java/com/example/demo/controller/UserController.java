@@ -178,6 +178,16 @@ public class UserController {
 	 public String loginuser(@PathVariable String username,@PathVariable String password) throws ClassNotFoundException, SQLException {
 		 return lservice.loginuser(username, password);
 	 }
+	 
+	 @PostMapping("/close-useraccount-request/{username}")
+	   public String closerequest(@PathVariable String username) {
+	    	return service.closeUserAccountsRequest(username);
+	    }
+	 
+	 @PostMapping("/close-bankaccount-request/{accountNumber}")
+	   public String closebrequest(@PathVariable String accountNumber) {
+	    	return accountService.closeBankAccountsRequest(accountNumber);
+	    }
     
 	// New loan methods: //
 	    
@@ -207,6 +217,11 @@ public class UserController {
 	    		@RequestParam String paymentDate,@RequestParam String paymentType,
 	    		@RequestParam double paymentAmount,@RequestParam String remarks) {
 	    	return installmentservice.payInstallment(loanId, paymentDate, paymentType, paymentAmount, remarks);
+	    }
+	    
+	    @PostMapping("/loans/closerequest/{loanid}")
+	    public String closeRequest (@PathVariable int loanid) {
+	    	return newLoanService.LoanClose(loanid);
 	    }
 	    
 }

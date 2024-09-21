@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Account;
+import com.example.demo.domain.ApprovalRequest;
 import com.example.demo.domain.EligibilityResponse;
 import com.example.demo.domain.Loan;
+import com.example.demo.domain.LoanDetailsResponse;
 import com.example.demo.domain.NewLoan;
 import com.example.demo.domain.User;
 import com.example.demo.service.AccountService;
@@ -39,17 +41,36 @@ public class ManagerController {
     @Autowired
     private NewLoanService newlservice;
     
+    @Autowired
+	private UserService userservice;
 	
-    @GetMapping("/unapproved-accounts")
-    public ResponseEntity<List<Map<String, Object>>> getNotApprovedAccounts() {
-        List<Map<String, Object>> notApprovedAccounts = accountService.getNotApprovedAccounts();
-        return ResponseEntity.ok(notApprovedAccounts);
+    
+	
+    @GetMapping(value = "/showRequests")
+	public List<ApprovalRequest> showUnapproved() {
+	    return userservice.BankMrequests();
+	}
+    
+//    @GetMapping("/unapproved-accounts")
+//    public ResponseEntity<List<Map<String, Object>>> getNotApprovedAccounts() {
+//        List<Map<String, Object>> notApprovedAccounts = accountService.getNotApprovedAccounts();
+//        return ResponseEntity.ok(notApprovedAccounts);
+//    }
+    
+    @PutMapping("/close-bank-account/{requestId}")
+    public String closeuserAccount(@PathVariable int requestId) {
+    	return accountService.CloseBankAccounts(requestId);
+    }
+    
+    @PutMapping("/approve-account/{requestId}")
+    public String approveAccount(@PathVariable int  requestId) {
+    	return accountService.approveBankAccounts(requestId);
     }
         
-    @PutMapping("/approve-account/{accountNumber}")
-    public String approveAccount(@PathVariable String accountNumber) {
-    	return accountService.approveAccounts(accountNumber);
-    }
+//    @PutMapping("/approve-account/{accountNumber}")
+//    public String approveAccount(@PathVariable String accountNumber) {
+//    	return accountService.approveAccounts(accountNumber);
+//    }
     
     @GetMapping("/show-unapprovedloans")
     public List<Loan> unapprovedLoan(){
@@ -120,10 +141,26 @@ public class ManagerController {
 		 return newlservice.approveLoan(loanId, sanctionAmount, period);
 	 }
 	 
-	 @PutMapping("/reject-loan/{loanId}")
-	 public String approveloan(@PathVariable int loanId) {
-		 return newlservice.RejectLoan(loanId);
+	 @PutMapping("/reject-loan/{requestId}")
+	 public String approveloan(@PathVariable int requestId) {
+		 return newlservice.RejectLoan(requestId);
 	 }
+	 
+	 @GetMapping("/close-loan-details/{loanId}")
+	 public LoanDetailsResponse showDetloan(@PathVariable int loanId) {
+		 return newlservice.getLoanDetForApproval(loanId);
+	 }
+	 
+	 @PutMapping("/approve-loan-close/{requestId}")
+	 public String approveloanclose(@PathVariable int requestId) {
+		 return newlservice.approveLoanClose(requestId);
+	 }
+	 
+	 @PutMapping("/reject-loan-close/{requestId}")
+	 public String rejectloanclose(@PathVariable int requestId) {
+		 return newlservice.RejectLoanClose(requestId);
+	 }
+    
     
    
 }

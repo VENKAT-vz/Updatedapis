@@ -13,11 +13,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.domain.Account;
+import com.example.demo.domain.User;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, String> {
 
 	List<Account> findByUsername(String username);
+	
 	
 	Optional<Account> findByAccountNumber(String accountNumber);
 	
