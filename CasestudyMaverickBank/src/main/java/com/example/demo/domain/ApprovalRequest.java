@@ -18,16 +18,16 @@ public class ApprovalRequest {
 
     @JsonIgnore
     @Column(name = "to_whom", nullable = false)
-    private String toWhom; // 'Admin' or 'BankManager'
+    private String toWhom;
 
     @Column(name = "requirement", nullable = false)
-    private String requirement; // 'LoanClosure', 'AccountClosure', 'UserAccountClosure'
+    private String requirement; 
 
     @Column(name = "action_needed_on", nullable = false)
-    private String actionNeededOn; // Loan ID, Account Number, or Username
+    private String actionNeededOn; 
 
     @Column(name = "status", nullable = false)
-    private String status; // 'Approved' or 'Rejected'
+    private String status; 
 
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
@@ -35,7 +35,6 @@ public class ApprovalRequest {
     @Column(name = "remarks", nullable=true)
     private String remarks;
 
-    // Constructors
     public ApprovalRequest() {}
 
     public ApprovalRequest(String toWhom, String requirement, String actionNeededOn, String status, String remarks) {
