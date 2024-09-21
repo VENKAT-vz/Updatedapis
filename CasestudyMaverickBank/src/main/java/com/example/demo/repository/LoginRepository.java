@@ -14,10 +14,4 @@ public interface LoginRepository extends JpaRepository<Login,String>{
 
     Login findByUsername(String username);
     Login findByEmailid(String emailid);
-    
-    @Modifying
-    @Transactional
-    @Query("UPDATE Login l SET l.status = 'active' WHERE l.username = :username")
-    void allowaccess(String username);
-
 }

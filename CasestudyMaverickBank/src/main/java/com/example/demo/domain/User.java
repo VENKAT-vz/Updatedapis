@@ -1,6 +1,5 @@
 package com.example.demo.domain;
 
-import java.io.Serializable;
 import java.sql.Date;
 
 import javax.persistence.Column;
@@ -12,10 +11,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "users") 
 
-public class User implements Serializable {
+public class User   {
 	
-	private static final long serialVersionUID = 1L;
-
 		@Column(name = "firstname")
 	    private String firstname;
 
@@ -26,7 +23,7 @@ public class User implements Serializable {
 	    private Date dateOfBirth;
 
 	    @Column(name = "gender")
-	    private char gender;
+	    private String gender;
 
 	    @Column(name = "contact_number")
 	    private String contactNumber;
@@ -87,15 +84,15 @@ public class User implements Serializable {
 	        this.dateOfBirth = dateOfBirth;
 	    }
 
-	    public char getGender() {
-	        return gender;
-	    }
+	    public String getGender() {
+			return gender;
+		}
 
-	    public void setGender(char gender) {
-	        this.gender = gender;
-	    }
+		public void setGender(String gender) {
+			this.gender = gender;
+		}
 
-	    public String getContactNumber() {
+		public String getContactNumber() {
 	        return contactNumber;
 	    }
 
@@ -174,16 +171,6 @@ public class User implements Serializable {
 		public void setIncome(Double income) {
 			this.income = income;
 		}
-
-		@Override
-		public String toString() {
-			return "User [firstname=" + firstname + ", lastname=" + lastname + ", dateOfBirth=" + dateOfBirth
-					+ ", gender=" + gender + ", contactNumber=" + contactNumber + ", address=" + address + ", city="
-					+ city + ", state=" + state + ", aadharNum=" + aadharNum + ", panNum=" + panNum + ", status="
-					+ status + ", username=" + username + ", emailid=" + emailid + ", income=" + income + "]";
-		}
-
-
 	    
 }
 	

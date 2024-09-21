@@ -1,12 +1,10 @@
 package com.example.demo.service;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+
 import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,10 +37,7 @@ public class LoginService {
         return "User with credentials already exists";
     }
     
-    public String approveaccess(String username) {
-    	lrepo.allowaccess(username);
-    	return "The user is active now....";
-    }
+
 
     public String correctEncode(String username, String rawPassword) {
         Login login = lrepo.findByUsername(username);
@@ -58,19 +53,7 @@ public class LoginService {
         }
         return "User not found!";
     }
-    
-    public String updatePassword(String username,String password) {
-        Login login = lrepo.findByUsername(username);
-        if (login != null) {
-        	String Encodedpassword=bCryptPasswordEncoder.encode(password);
-        	login.setPassword(Encodedpassword);
-        	lrepo.save(login);
-        	return "Password updated";
-        }
-        return "No user account found";
 
-
-    }
 	public String loginuser(String username, String password) throws ClassNotFoundException, SQLException {
 
         Login login = lrepo.findByUsername(username);

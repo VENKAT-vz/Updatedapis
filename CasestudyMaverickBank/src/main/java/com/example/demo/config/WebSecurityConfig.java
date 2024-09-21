@@ -31,21 +31,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-    	http
-        .authorizeRequests()
-    		.antMatchers("/users/addUser").permitAll() 
-    		.antMatchers("/registerAdmin").permitAll() 
-            .antMatchers("/admin/**").hasRole("ADMIN")
-            .antMatchers("/manager/**").hasRole("BANK_MANAGER")
-            .antMatchers("/users/**").hasRole("CUSTOMER")
-            .antMatchers("/login/**").hasRole("CUSTOMER")
-            .anyRequest().authenticated()
-    	
 //    	http
 //        .authorizeRequests()
-//            .anyRequest().permitAll()
-//            
- //
+//    		.antMatchers("/users/addUser").permitAll() 
+//    		.antMatchers("/registerAdmin").permitAll() 
+//            .antMatchers("/admin/**").hasRole("ADMIN")
+//            .antMatchers("/manager/**").hasRole("BANK_MANAGER")
+//            .antMatchers("/users/**").hasRole("CUSTOMER")
+//            .antMatchers("/login/**").hasRole("CUSTOMER")
+//            .anyRequest().authenticated()
+    	
+    	http
+        .authorizeRequests()
+            .anyRequest().permitAll()
+            
+ 
         .and()
         .httpBasic() 
         .and()

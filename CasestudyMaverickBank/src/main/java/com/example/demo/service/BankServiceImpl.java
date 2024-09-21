@@ -25,7 +25,6 @@ public class BankServiceImpl implements BankService {
 	    @Autowired
 	    private TransactionRepository transactionRepository; 
 
-
 	    @Transactional
 	    public String deposit(String accountNumber, double amount) {
 	    	accountrepo.depositAmount(accountNumber, amount);
@@ -62,38 +61,6 @@ public class BankServiceImpl implements BankService {
 
 	        return "Amount withdrawn successfully.";
 	    }
-
-	    @Transactional
-	    public String moneyTransfer(String senderPhoneNumber, String receiverPhoneNumber, double amount) {
-	        String senderAccountNumber = getAccountNumberByPhone(senderPhoneNumber);
-	        String receiverAccountNumber = getAccountNumberByPhone(receiverPhoneNumber);
-
-	        double senderBalance = getCurrentBalance(senderAccountNumber);
-	        if (senderBalance < amount) {
-	            return "Insufficient balance.";
-	        }
-
-	        accountrepo.withdrawAmount(senderAccountNumber, amount);
-	        accountrepo.depositAmount(receiverAccountNumber, amount);
-
-	        Transaction senderTransaction = new Transaction();
-	        senderTransaction.setAccountNumber(senderAccountNumber);
-	        senderTransaction.setAmount(amount);
-	        senderTransaction.setTransactionDate(new java.sql.Date(new Date().getTime()));
-	        senderTransaction.setTransactionType("transfer-out");
-	        senderTransaction.setDescription("Transfer to " + receiverAccountNumber);
-	        transactionRepository.save(senderTransaction);
-
-	        Transaction receiverTransaction = new Transaction();
-	        receiverTransaction.setAccountNumber(receiverAccountNumber);
-	        receiverTransaction.setAmount(amount);
-	        receiverTransaction.setTransactionDate(new java.sql.Date(new Date().getTime()));
-	        receiverTransaction.setTransactionType("transfer-in");
-	        receiverTransaction.setDescription("Transfer from " + senderAccountNumber);
-	        transactionRepository.save(receiverTransaction);
-
-	        return "Transfer successful: " + amount + " transferred from " + senderAccountNumber + " to " + receiverAccountNumber;
-	    }
 	    
 	    
 	    @Transactional
@@ -128,11 +95,6 @@ public class BankServiceImpl implements BankService {
 	        return "Transfer successful: " + amount + " transferred from " + senderAccountNumber + " to " + receiverAccountNumber;
 	    }
 	    
-	    
-	    public String getAccountNumberByPhone(String phoneNumber) {
-	        Account account = accountrepo.findByUserContactNumber(phoneNumber);
-	        return account.getAccountNumber();
-	    }
 
 	    public double getCurrentBalance(String accountNumber) {
 	        return accountrepo.findBalanceByAccountNumber(accountNumber);

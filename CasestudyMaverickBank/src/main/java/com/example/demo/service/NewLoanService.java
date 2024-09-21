@@ -57,7 +57,24 @@ public class NewLoanService {
 	 @Autowired
 		private ApprovalRequestRepository approvalRequestRepository;
 	
-	@Transactional
+	 
+	 public NewLoan searchloan(int loanid) {
+		 Optional<NewLoan> optionalloan = newLoanrepo.findById(loanid);
+		 return optionalloan.get();
+	 }
+	 
+	 public List<NewLoan> showAll(){
+		 return newLoanrepo.findAll();
+	 }
+	 
+	 public String deleteLoan(int loanid) {
+		 if(newLoanrepo.existsById(loanid)) {
+			 newLoanrepo.deleteById(loanid);
+			 return "Loan deleted";
+		 }
+		 return "Loan not deleted";
+	 }
+	 
 	public NewLoan applyloan(NewLoan loan,double income) {
 		
 		newLoanrepo.updateUserIncomeByAccountNumber(income,loan.getAccountNumber());
@@ -74,9 +91,6 @@ public class NewLoanService {
 		return loan;
 	}
 	
-	public List<NewLoan> showUnapprovedLoans() {
-		return newLoanrepo.NotApprovedLoans();
-	}
 	
   public String approveLoan(int loanId, double sanctionAmount, int period) {
       Optional<NewLoan> optionalLoan = newLoanrepo.findById(loanId);
@@ -125,8 +139,19 @@ public class NewLoanService {
 	    }
   
   
-  public EligibilityResponse showEligibility(String accountNumber) {
+  public EligibilityResponse showEligibility(int requestId) {
 	  
+	  Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+		 
+	  String loanid=approvalRequest.getActionNeededOn();
+	  Optional<NewLoan> optionalloan = newLoanrepo.findById(Integer.valueOf(loanid));
+	  if (!optionalloan.isPresent()) {
+          throw new IllegalArgumentException("Loan not found with loanid: " + loanid);
+      }
+	  
+	  NewLoan loan = optionalloan.get();
+	  String accountNumber=loan.getAccountNumber();
       Optional<Account> optionalAccount = accountRepository.findByAccountNumber(accountNumber);
       if (!optionalAccount.isPresent()) {
           throw new IllegalArgumentException("Account not found with account number: " + accountNumber);

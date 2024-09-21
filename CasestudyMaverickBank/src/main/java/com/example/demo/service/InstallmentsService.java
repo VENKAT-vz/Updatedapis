@@ -4,13 +4,19 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.domain.Account;
 import com.example.demo.domain.Installments;
 import com.example.demo.domain.NewLoan;
+import com.example.demo.repository.AccountRepository;
 import com.example.demo.repository.InstallmentsRepository;
 import com.example.demo.repository.NewLoanRepository;
 
@@ -23,6 +29,11 @@ public class InstallmentsService {
 	@Autowired
 	private NewLoanRepository newLoanrepo;
 
+	@Autowired
+	private EmailService emailService;
+	
+	@Autowired
+	private AccountRepository accountRepository;
 
 	public void createInstallment(int loanId, Date loanApprovedDate, double installmentAmount) {
         Date firstInstallmentDate = new Date(loanApprovedDate.getTime() + (30L * 24 * 60 * 60 * 1000));
@@ -116,6 +127,9 @@ public class InstallmentsService {
 	        installmentrepo.save(newInstallment);
 	    }
 	 
+	 //if the customer pays installments before due date +2 points
+	 //if late -2 points, no points for on date payment
+	 //if severely late -5 points like more than 30 days
 	 public void addRepaymentPoints(int loanId, Date paymentDate, Date installmentDate) {
 
 		 	LocalDate paymentLocalDate = paymentDate.toLocalDate();
@@ -144,6 +158,45 @@ public class InstallmentsService {
 		    loan.setRepaymentPoints(loan.getRepaymentPoints() + pointsToAdd);
 		    newLoanrepo.save(loan);
 		}
+	 
+	 
+	  
+	 //automated mail sender, it will send mail to the 
+	 //customer who's due date is tomorrow
+	    @Scheduled(cron = "0 30 9 * * ?") 
+	    @Transactional
+	   public void automateInstallmentReminders() {
+	        List<Installments> pendingInstallments = installmentrepo.findByInstallmentStatus("Pending");
+
+	  for (Installments installment : pendingInstallments) {
+		  LocalDate installmentDate = installment.getInstallmentDate().toLocalDate();
+	      LocalDate reminderDate = installmentDate.minusDays(1);
+
+	    if (LocalDate.now().equals(reminderDate)) {
+	        	   
+	       Optional<NewLoan> optionalLoan = newLoanrepo.findById(installment.getLoanId());
+	            
+	      if (optionalLoan.isPresent()) {
+	            	
+            NewLoan loan = optionalLoan.get();
+	                    
+	         Optional<Account> optionalAccount = accountRepository.findByAccountNumber(loan.getAccountNumber());
+	         if (optionalAccount.isPresent()) {
+	             Account account = optionalAccount.get();
+	             String customerEmail = account.getEmailid();
+	             String subject = "Reminder: Your Installment is Due Tomorrow";
+	             String body = "Dear customer, your next installment of " + installment.getInstallmentAmount() + 
+	                                      " is due on " + installmentDate + ". Please make the payment on time.";
+
+	             emailService.sendInstallmentReminder(customerEmail, subject, body);
+	        }
+	   
+	      }        
+	    }
+	   
+	   }
+	 }
+
 
 }
 

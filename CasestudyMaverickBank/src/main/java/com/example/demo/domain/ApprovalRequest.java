@@ -18,11 +18,11 @@ public class ApprovalRequest {
 
     @JsonIgnore
     @Column(name = "to_whom", nullable = false)
-    private String toWhom;
+    private String toWhom; 
 
     @Column(name = "requirement", nullable = false)
     private String requirement; 
-
+    
     @Column(name = "action_needed_on", nullable = false)
     private String actionNeededOn; 
 
@@ -42,7 +42,7 @@ public class ApprovalRequest {
         this.requirement = requirement;
         this.actionNeededOn = actionNeededOn;
         this.status = status;
-        this.createdAt = new Date(System.currentTimeMillis()); // Set current date
+        this.createdAt = new Date(System.currentTimeMillis()); 
         this.remarks=remarks;
     }
 

@@ -8,6 +8,7 @@ public class LoanDetailsResponse {
 	    private int minTenureMonths;
 	    private double outstandingBalance;
 	    private String verdict;
+	    
 		public int getLoanId() {
 			return loanId;
 		}

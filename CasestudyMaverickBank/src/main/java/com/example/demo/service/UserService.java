@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 import com.example.demo.domain.ApprovalRequest;
 import com.example.demo.domain.Login;
 import com.example.demo.domain.User;
+import com.example.demo.domain.Usershow;
 import com.example.demo.repository.ApprovalRequestRepository;
 import com.example.demo.repository.LoginRepository;
 import com.example.demo.repository.UserRepository;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,8 +30,6 @@ public class UserService {
 	@Autowired
 	private LoginRepository lrepo;
 	
-//	@Autowired
-//	private JdbcTemplate jdbcTemplate;
 	
     public String addUser(User user) {
         if (userRepo.existsById(user.getUsername())) {
@@ -51,57 +51,71 @@ public class UserService {
         return "User added successfully!";
     }
 
-    public List<User> showAllUsers() {
-        return userRepo.findAll();
-    }
-
-    public User searchUser(String usernameOrEmail) {
-        User user = userRepo.findByUsername(usernameOrEmail);
-        if (user == null) 
-        {
-            user = userRepo.findByEmailid(usernameOrEmail);
+    public List<Usershow> showAllUsers() {
+    	
+    	List<Usershow> usershow=new ArrayList<>();
+        List<User> user=userRepo.findAll();
+        for(User userdet:user) {
+        	Usershow ushow=new Usershow();
+        	ushow.setFirstname(userdet.getFirstname());
+        	ushow.setLastname(userdet.getLastname());
+        	ushow.setAddress(userdet.getAddress());
+        	ushow.setCity(userdet.getCity());
+        	ushow.setContactNumber(userdet.getContactNumber());
+        	ushow.setDateOfBirth(userdet.getDateOfBirth());
+        	ushow.setEmailid(userdet.getEmailid());
+        	ushow.setStatus(userdet.getStatus());
+        	ushow.setUsername(userdet.getUsername());
+        	ushow.setGender(userdet.getGender());
+        	
+        	Login login=lrepo.findByUsername(userdet.getUsername());
+        	ushow.setRole(login.getRole());
+        	
+        	usershow.add(ushow);
         }
+        return usershow;
 
-        return user;
     }
-    
-    public boolean deleteUser(String username) {
-        User user = userRepo.findByUsername(username);
-        if (user!=null) 
+
+    public Usershow searchUser(String usernameOrEmail) {
+        User userdet = userRepo.findByUsername(usernameOrEmail);
+        if (userdet == null) 
         {
-            userRepo.deleteById(username);
-            return true;
-        } 
-        else
-            return false;
+            userdet = userRepo.findByEmailid(usernameOrEmail);
+        }
+        
+    	Usershow ushow=new Usershow();
+    	ushow.setFirstname(userdet.getFirstname());
+    	ushow.setLastname(userdet.getLastname());
+    	ushow.setAddress(userdet.getAddress());
+    	ushow.setCity(userdet.getCity());
+    	ushow.setContactNumber(userdet.getContactNumber());
+    	ushow.setDateOfBirth(userdet.getDateOfBirth());
+    	ushow.setEmailid(userdet.getEmailid());
+    	ushow.setStatus(userdet.getStatus());
+    	ushow.setUsername(userdet.getUsername());
+    	ushow.setGender(userdet.getGender());
+    	
+    	Login login=lrepo.findByUsername(userdet.getUsername());
+    	ushow.setRole(login.getRole());
+        
+        return ushow;
     }
     
-//	 public String approveUserAccounts(String username) {
-//		    int rowsAffected = userRepo.approveUserAccount(username);   
-//		    if (rowsAffected > 0) 
-//		    {
-//		        return "User Account approved successfully.";
-//		    } 
-//		    else 
-//		        return " User Account approval failed. Account not found.";   
-//		}
-//	 
-//	 public String closeUserAccounts(String username) {
-//		    int rowsAffected = userRepo.closeUserAccount(username);   
-//		    if (rowsAffected > 0) 
-//		    {
-//		        return "User Account closed successfully.";
-//		    } 
-//		    else 
-//		        return " User Account closing failed. Account not found.";   
-//		}
+    public String deleteUser(String username) {
+        if(userRepo.existsById(username)) {
+        	userRepo.deleteById(username);
+        	return "User deleted successfully...";
+        }
+    	return "User not deleted..";
+
+    }
+    
     
     //admin
 	 public String approveUserAccounts(int requestId) {
 		 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
 		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
-		 approvalRequest.setStatus("Approved");
-		 approvalRequestRepository.save(approvalRequest);
 		 
 		 String username=approvalRequest.getActionNeededOn();
 		 User user=userRepo.findByUsername(username);
@@ -112,10 +126,37 @@ public class UserService {
 		 login.setStatus("active");
 		 lrepo.save(login);
 		 
+		 approvalRequest.setStatus("Approved");
+		 approvalRequestRepository.save(approvalRequest);
+		 
 		 return "The user account is set to active...";
 		 
 	      
-}
+	 }
+	 
+	    //admin
+	 public String RejectUserAccount(int requestId) {
+		 
+			 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+			 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+			 
+			 String username=approvalRequest.getActionNeededOn();
+			 User user=userRepo.findByUsername(username);
+			 user.setStatus("rejected");
+			 userRepo.save(user);
+			 
+			 Login login = lrepo.findByUsername(username);
+			 
+			 lrepo.delete(login);
+			 
+			 approvalRequest.setStatus("Rejected");
+			 approvalRequest.setRemarks("The user details are not satisfactory to create an user account");
+			 approvalRequestRepository.save(approvalRequest);
+			 
+			 return "The user account is rejected...";
+			 
+		      
+	}
 	//admin
 	 public String CloseUserAccounts(int requestId) {
 		 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
@@ -154,9 +195,5 @@ public class UserService {
 		 return approvalRequestRepository.showAllrequestsBankManager();
 	 }
 	 
-//	 public List<User> unapprovedUserAccounts() {
-//		    return userRepo.unapproveduseraccounts();
-//		}
-
 
 }

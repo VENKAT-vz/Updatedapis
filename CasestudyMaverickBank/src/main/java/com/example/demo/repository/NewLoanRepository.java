@@ -13,8 +13,8 @@ import com.example.demo.domain.NewLoan;
 
 public interface NewLoanRepository extends JpaRepository<NewLoan, Integer>{
 
-	@Query("SELECT l from NewLoan l WHERE status='Pending'")
-	List<NewLoan> NotApprovedLoans();
+//	@Query("SELECT l from NewLoan l WHERE status='Pending'")
+//	List<NewLoan> NotApprovedLoans();
 
 	@Modifying
 	@Transactional
@@ -24,7 +24,5 @@ public interface NewLoanRepository extends JpaRepository<NewLoan, Integer>{
 	                            "FROM Account a " +
 	                            "WHERE a.accountNumber = :accountNumber)")
 	void updateUserIncomeByAccountNumber(@Param("newIncome") Double newIncome, @Param("accountNumber") String accountNumber);
-
-	
-	
+		
 }

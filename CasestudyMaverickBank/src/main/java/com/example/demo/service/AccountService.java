@@ -1,12 +1,11 @@
 package com.example.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.Account;
 import com.example.demo.domain.ApprovalRequest;
-import com.example.demo.domain.Login;
+
 import com.example.demo.domain.Transaction;
 import com.example.demo.domain.User;
 import com.example.demo.repository.AccountRepository;
@@ -42,13 +41,7 @@ public class AccountService {
     	Date currentDate = new Date(System.currentTimeMillis());
     	account.setDateCreated(currentDate);
     	account.setStatus("NotApproved");
-    	
-    	//here we need to have a list like combinations of branches and their ifsc codes and 
-    	//whenever they enter branchname it should automatically set the ifsc codes.
-    	//account.setIfscCode(null);
-    	
-    	//get the pan number and aadhar only once ->check that here.
-    	
+    
     	Account savedAccount=accountRepository.save(account);
         User user = userRepository.findByUsername(account.getUsername());
         
@@ -94,15 +87,15 @@ public class AccountService {
         return accountRepository.findByUsername(username);
     }
     
-    public boolean deleteAccount(String accountNumber) {
-        if (accountRepository.existsById(accountNumber)) 
-        {
-          accountRepository.deleteById(accountNumber);
-            return true;
-        } 
-        else 
-            return false;
+    public String deleteAccount(String AccountNumber) {
+    	if(accountRepository.existsById(AccountNumber)) {
+    		accountRepository.deleteById(AccountNumber);
+    		return "Account deleted successfully...";
+    	}
+		return "Account not deleted successfully";
+
     }
+
 
     private String generateAccountNo() {
         String maxAccountNo = accountRepository.findMaxAccountNumber();
@@ -113,30 +106,6 @@ public class AccountService {
         return String.valueOf(nextAccountNo);
     }
 	 
-	 public List<Map<String, Object>> getNotApprovedAccounts() {
-		    return accountRepository.findNotApprovedAccounts();
-		}
-	 
-	 public String approveAccounts(String accountNumber) {
-		    int rowsAffected = accountRepository.approveAccount(accountNumber);
-		    
-		    if (rowsAffected > 0) {
-		        return "Account approved successfully.";
-		    } else {
-		        return "Account approval failed. Account not found.";
-		    }
-		}
-	 
-	 public String closeAccount(String accountNumber) {
-		    int rowsAffected = accountRepository.closeAccount(accountNumber);
-		    
-		    if (rowsAffected > 0) {
-		        return "Account closed successfully.";
-		    }
-		    else 
-		        return "Account closed failed. Account not found.";
-		    
-		}
 	 
 	  public String generateAccountStatement(String accountNumber) {
 	        StringBuilder statement = new StringBuilder();
@@ -203,7 +172,7 @@ public class AccountService {
 	    return age;
 	}
 	
-	//admin
+	//bankmanager
 	 public String CloseBankAccounts(int requestId) {
 		 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
 		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
@@ -220,6 +189,20 @@ public class AccountService {
 		 approvalRequestRepository.save(approvalRequest);
 		 
 		 return "The Bank account is closed...";
+		 
+	      
+	 }
+	 
+	 public String RejectCloseBankAccounts(int requestId) {
+		 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+		 
+		 approvalRequest.setStatus("Rejected");
+		 approvalRequest.setRemarks("Can't close account because you have pending payments..");
+
+		 approvalRequestRepository.save(approvalRequest);
+		 
+		 return "The Bank account closing rejected.";
 		 
 	      
 	 }
@@ -251,6 +234,26 @@ public class AccountService {
 		 approvalRequestRepository.save(approvalRequest);
 		 
 		 return "The bank account is set to active...";
+		 
+	      
+}
+	 //bankmanager
+	 public String rejectBankAccount(int requestId) {
+		 Optional<ApprovalRequest> optionalapprovalRequest = approvalRequestRepository.findById(requestId);
+		 ApprovalRequest approvalRequest=optionalapprovalRequest.get();
+		
+		 
+		 String username=approvalRequest.getActionNeededOn();
+		 Optional<Account> optionalaccount=accountRepository.findByAccountNumber(username);
+		 Account account=optionalaccount.get();
+		 account.setStatus("Rejected");
+		 accountRepository.save(account);
+		 
+		 approvalRequest.setStatus("Rejected");
+		 approvalRequest.setRemarks("Based on the details given, we can't open an account for you");
+		 approvalRequestRepository.save(approvalRequest);
+		 
+		 return "The bank account is rejected...";
 		 
 	      
 }
