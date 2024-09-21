@@ -144,57 +144,5 @@ public class Installments {
 	}
 	
 	
-	
-//	  @Autowired
-//	    private NewLoanService newLoanService;
-//	    
-//	    @Autowired
-//	    private NewLoanListRepository newLoanListRepository;
-//	    
-//	    @Autowired
-//	    private InstallmentsService installmentservice;
- // New loan methods: //
-    
-	//user controller
-//    @GetMapping("/loans/list")
-//    public List<NewLoanList> getAllLoanTypes() {
-//        return newLoanListRepository.findAll();
-//    }
-//    
-//    @PostMapping("/loans/apply")
-//    public String applyForLoan(@RequestParam String accountNumber,
-//    		@RequestParam String loanName, @RequestParam double loanAmount) {
-//        
-//        NewLoan newLoan = new NewLoan();
-//        newLoan.setAccountNumber(accountNumber);
-//        newLoan.setLoanName(loanName);
-//        newLoan.setLoanAmount(loanAmount);
-//        newLoan.setStatus("Pending"); 
-//
-//        NewLoan savedLoan = newLoanService.applyloan(newLoan);
-//
-//        return "Loan application successful with ID: " + savedLoan.getLoanId();
-//	    }
-    
-//    @PutMapping("/loans/makepayments")
-//    public String payInstallments(@RequestParam int loanId,
-//    		@RequestParam String paymentDate,@RequestParam String paymentType,
-//    		@RequestParam double paymentAmount,@RequestParam String remarks) {
-//    	return installmentservice.payInstallment(loanId, paymentDate, paymentType, paymentAmount, remarks);
-//    }
-    
-	
-//	  new loan table or class://////////////////////
-    
-//  @GetMapping("/show-unapproved-loans")
-//  public List<NewLoan> unapprovedLoans(){
-//  	return newlservice.showUnapprovedLoans();
-//  }
-//  
-//	 @PutMapping("/approve-loan")
-//	 public String approveloan(@RequestParam int loanid, @RequestParam double sanctionamount, 
-//			 @RequestParam int period) {
-//		 return newlservice.approveLoan(loanid, sanctionamount, period);
-//	 }
 
 }
