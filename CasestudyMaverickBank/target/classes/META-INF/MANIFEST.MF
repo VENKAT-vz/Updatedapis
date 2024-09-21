@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Built-By: venka
+Build-Jdk: 22
+Implementation-Title: CasestudyMaverickBank
+Implementation-Version: 0.0.1-SNAPSHOT
+Implementation-Vendor-Id: com.casestudy.maverickbank
+Implementation-URL: 
+Created-By: Maven Integration for Eclipse
+
